@@ -12,7 +12,7 @@
 
 ```bash
 git clone https://github.com/ByCh4n/SimpleVenom
-cd simplevenom-dev
+cd SimpleVenom
 bash ./simplevenom.sh
 ```
 Also There Is No Instalatıon Just Start The Script And Use It. Simple Venom Will Download Them If There Are Any Missing Packages.
