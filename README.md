@@ -1,4 +1,4 @@
-# SimpleVenom Dev
+# SimpleVenom
 ![Profile views](https://gpvc.arturio.dev/lazypwny751)
 
 (
@@ -6,7 +6,7 @@
 [*Discord*](https://discord.gg/m5B4c5rnbR)
 )
 
-![Minion](https://github.com/lazypwny751/simplevenom-dev/blob/main/logo.png)
+![logo](https://user-images.githubusercontent.com/67187998/102699886-3fed9c00-41fd-11eb-8163-eaf72618e862.png)
 
 ## Downloand&Usage
 
