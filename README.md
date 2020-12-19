@@ -11,7 +11,7 @@
 ## Downloand&Usage
 
 ```bash
-git clone https://github.com/lazypwny751/simplevenom-dev
+git clone https://github.com/ByCh4n/SimpleVenom
 cd simplevenom-dev
 bash ./simplevenom.sh
 ```
