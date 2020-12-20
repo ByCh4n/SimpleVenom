@@ -51,24 +51,32 @@ function rastgele_renk {
 
 function checktool {
 
-    if ! [ -f ${setdir}/installer.sh ] ; then
-        echo -e "Ops Sorry We Can't Found ${red}installer.sh${tp} Pls Reinstall This Tool!"
-        exit 1
+    if ! [ -f ${setdir}/requirementtoinstall.sh ] ; then
+        netcheckSI
+        curl -o "requirementtoinstall.sh" "https://raw.githubusercontent.com/ByCh4n/SimpleVenom/main/requirementtoinstall.sh"
+        if [[ -f ${setdir}/requirementtoinstall.sh ]] ; then
+            echo -e "Ops Sorry We Can't Found ${red}requirementtoinstall.sh${tp} Pls Reinstall This Tool!"
+            exit 1
+        fi
     fi
 
     if [[ $(command -v ${1}) != "" ]] ; then
-    echo "${1} Found.."
-else
-    netcheckSI
-    echo "${1} Can't Found Will Be Install.."
-    pkexec bash ${setdir}/installer.sh "${1}"
-    if [[ $(command -v ${1}) != "" ]] ; then
-        echo "${1} Is Istalled And Ready To Use.."
+            echo "${1} Found.."
     else
-        echo "some unknown errors occurred, if the problem persists, you can contact us at our discord address.: $dc"
+        netcheckSI
+        echo "${1} Can't Found Will Be Install.."
+        pkexec bash ${setdir}/requirementtoinstall.sh "${1}"
+        if [[ $(command -v ${1}) != "" ]] ; then
+            echo "${1} Is Istalled And Ready To Use.."
+        else
+            echo "some unknown errors occurred, if the problem persists, you can contact us at our discord address.: $dc"
+            exit 1
+        fi
+    fi
+
+    if [[ ${exit2tool} = 1 ]] ; then
         exit 1
     fi
-fi
 }
 
 center() {
@@ -247,18 +255,6 @@ ctrl_c() {
     fi
 exit 0
 }
-
-## check apt && kali
-
-if [[ $(command -v apt) != "" ]] ; then
-    echo "Debian Based Distro Founded Have Fun.."
-    if [[ $(uname -r) = *kali* ]] ; then
-        echo "Kali Founden Don't Be A Script Kiddie"
-    fi
-else
-    echo -e "this script is currently only compatible with debian \n TR: Henüz Bash'ımız Arch'a Değmedi.."
-    exit 1
-fi
 
 checktool zenity
 checktool msfvenom
