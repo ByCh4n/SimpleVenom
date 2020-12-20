@@ -53,8 +53,8 @@ function checktool {
 
     if ! [ -f ${setdir}/requirementtoinstall.sh ] ; then
         netcheckSI
-        curl -o "requirementtoinstall.sh" "https://raw.githubusercontent.com/ByCh4n/SimpleVenom/main/requirementtoinstall.sh"
-        if [[ -f ${setdir}/requirementtoinstall.sh ]] ; then
+        curl -o "${setdir}/requirementtoinstall.sh" "https://raw.githubusercontent.com/ByCh4n/SimpleVenom/main/requirementtoinstall.sh"
+        if ! [ -f ${setdir}/requirementtoinstall.sh ] ; then
             echo -e "Ops Sorry We Can't Found ${red}requirementtoinstall.sh${tp} Pls Reinstall This Tool!"
             exit 1
         fi
