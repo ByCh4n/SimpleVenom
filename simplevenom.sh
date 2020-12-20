@@ -141,7 +141,7 @@ function localip {
 
     if [[ $lhost = "" ]] ; then
         lhost="$setlhost"
-        echo -e "Set LocalIP=> $lhost"
+        echo -e "Set Lhost=> $lhost"
     elif [[  $lhost != "" ]] ; then
         re='^[0-9]+([.][0-9]+)+([.][0-9]+)+([.][0-9]+)?$'
         if ! [[ $lhost =~ $re ]] ; then
@@ -164,7 +164,7 @@ function localport {
 
     if [[ $lport = "" ]] ; then
         lport="$setlport"
-        echo -e "Set LocalIP=> $lport"
+        echo -e "Set Lport=> $lport"
     elif [[ $lport != "" ]] ; then
         re='^[0-9]+$'
         if ! [[ $lport =~ $re ]] ; then
@@ -269,7 +269,7 @@ checktool xterm
 printf '\033[8;25;90t'
 banner
 center "Log Screen V1 - $today" #payload=$(zenity --width=360 --height=320 --list --title "SimpleVenom $setversion / $owner" --text "Choise a Platform..." --column Platforms "windows/meterpreter/reverse_tcp" "windows/meterpreter/reverse_http" "windows/meterpreter/reverse_tcp_dns")
-echo -e "Set Port=> $setlhost\nSet LocalIP=> $setlport\nSet File Name=> $setname\n"
+echo -e "Set Lhost=> $setlhost\nSet Lport=> $setlport\nSet File Name=> $setname\n"
 while :; do
 
     choiseplatform=$(zenity --width=360 --height=320 --list --title "SimpleVenom $setversion / $owner" --text "Choise a Platform..." --column Platforms "Windows" "Android" "Linux")
