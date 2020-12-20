@@ -4,6 +4,7 @@
 (
 **Contact:**
 [*Discord*](https://discord.gg/m5B4c5rnbR)
+[*YouTube*](https://www.youtube.com/channel/UCzOK1_NybPfqNb1V4Hjj-iw?view_as=subscriber)
 )
 
 ![logo](https://user-images.githubusercontent.com/67187998/102699886-3fed9c00-41fd-11eb-8163-eaf72618e862.png)
