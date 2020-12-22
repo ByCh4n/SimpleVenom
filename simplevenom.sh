@@ -20,7 +20,7 @@ fiuscha="\033[0;35m"
 blue="\033[1;34m"
 tp="\e[0m"
 
-setdir=$PWD
+setdir="$PWD"
 setversion="1.0"
 owner="ByCh4n&LazyPwny"
 
