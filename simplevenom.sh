@@ -51,10 +51,10 @@ function rastgele_renk {
 
 function checktool {
 
-    if ! [ -f ${setdir}/requirementtoinstall.sh ] ; then
+    if ! [ -f "${setdir}/requirementtoinstall.sh" ] ; then
         netcheckSI
         curl -o "${setdir}/requirementtoinstall.sh" "https://raw.githubusercontent.com/ByCh4n/SimpleVenom/main/requirementtoinstall.sh"
-        if ! [ -f ${setdir}/requirementtoinstall.sh ] ; then
+        if ! [ -f "${setdir}/requirementtoinstall.sh" ] ; then
             echo -e "Ops Sorry We Can't Found ${red}requirementtoinstall.sh${tp} Pls Reinstall This Tool!"
             exit 1
         fi
@@ -65,7 +65,7 @@ function checktool {
     else
         netcheckSI
         echo "${1} Can't Found Will Be Install.."
-        pkexec bash ${setdir}/requirementtoinstall.sh "${1}"
+        pkexec bash "${setdir}/requirementtoinstall.sh" "${1}"
         if [[ $(command -v ${1}) != "" ]] ; then
             echo "${1} Is Istalled And Ready To Use.."
         else
