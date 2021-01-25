@@ -31,7 +31,7 @@ setlhost=$(hostname -I)
 setlport="666"
 setname="venom"
 
-dc="https://discord.gg/gzDZQm6FyZ"
+dc="https://discord.io/ByCh4n"
 
 ## ARGV
 if [[ $1 =~ ^(-v|-V|--version|--VERSION|version) ]] ; then
