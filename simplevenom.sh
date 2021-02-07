@@ -27,7 +27,7 @@ owner="ByCh4n&LazyPwny"
 today=$(date | awk '{print $1,$2,$3,$4"-"$5}')
 thistime=$(date | awk '{$5}')
 
-setlhost=$(hostname -I)
+setlhost=$(hostname -I | awk '{print $1}')
 setlport="666"
 setname="venom"
 
