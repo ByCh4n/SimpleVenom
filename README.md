@@ -4,28 +4,29 @@
 (
 **Contact:**
 [*Discord*](https://discord.gg/m5B4c5rnbR)
+
 [*YouTube*](https://www.youtube.com/channel/UCzOK1_NybPfqNb1V4Hjj-iw?view_as=subscriber)
 )
 
 ![logo](https://user-images.githubusercontent.com/67187998/102699886-3fed9c00-41fd-11eb-8163-eaf72618e862.png)
 
-## Downloand&Usage
+## Download & Usage
 
 ```bash
 git clone https://github.com/ByCh4n/SimpleVenom
 cd SimpleVenom
 bash ./simplevenom.sh
 ```
-Also There Is No Instalatıon Just Start The Script And Use It. Simple Venom Will Download Them If There Are Any Missing Packages.
+Also, there is no Instalation. Just start and use Script. SimpleVenom will download any missing packages.
 
-## Thanks By
+## Thanks To
 
-Nick Name | Github Link
+Nickname | GitHub Link
 --- | --- 
 **ByCh4n**  | [*ByCh4n*](https://github.com/ByCh4n/)
 **lazypwny** | [*lazypwny751*](https://github.com/lazypwny751)
 
-## Photos From Tool
+## Screenshots of the Tool
 
 ![1](https://user-images.githubusercontent.com/67187998/102700791-6e6f7500-4205-11eb-814d-8b8427acd551.png)
 ##
