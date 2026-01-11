@@ -1,0 +1,12 @@
+# Generated Payloads
+*.exe
+*.apk
+*.elf
+*.asp
+*.aspx
+*.jsp
+*.php
+*.war
+
+# Logs and temporary files
+*.log
